@@ -13,6 +13,7 @@ setup(
         "pandas",
         "matplotlib",
         "tqdm",
+        "pycoingecko",
     ],
     extras_require={
         "dev": [
