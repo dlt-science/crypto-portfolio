@@ -6,7 +6,7 @@ from pathlib import Path
 
 from environ.settings import PROJECT_ROOT
 
-# Path to the directory
+# Paths
 DATA_PATH: Path = PROJECT_ROOT / "data"
 PROCESSED_DATA_PATH: Path = DATA_PATH / "processed"
 TABLE_PATH: Path = DATA_PATH / "tables"
