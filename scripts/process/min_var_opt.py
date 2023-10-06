@@ -1,12 +1,12 @@
 """
-Script to empirically test the mean-variance optimization
+Script to empirically test the minimum-variance optimization
 """
 import pandas as pd
 from scipy.optimize import minimize
 
 from environ.constants import glob_con
 from environ.process.mat_op import _panel_to_pivot, get_pivot_mean_cov_mat
-from environ.process.obj_fuc import mean_var_obj
+from environ.process.obj_fuc import min_var_obj
 from scripts.process.preprocess_crypto_panel import date_list, df_crypto_processed
 
 df_res = pd.DataFrame()
@@ -29,11 +29,10 @@ for q_idx in range(len(date_list) - 2):
 
     # optimize the weight
     res = minimize(
-        mean_var_obj,
+        min_var_obj,
         # weight init
-        # [0, 1] + [0 for _ in range(len(mean_ret) - 2)],
-        [1 / len(mean_ret) for _ in range(len(mean_ret))],
-        args=(mean_ret, cov_mat),
+        [0, 1] + [0 for _ in range(len(mean_ret) - 2)],
+        args=(cov_mat),
         constraints=glob_con,
         bounds=[(0, 1) for _ in range(len(mean_ret))],
     )

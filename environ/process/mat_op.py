@@ -17,7 +17,11 @@ def _panel_to_pivot(
     Function to convert the panel data to the pivot table
     """
 
-    return df_panel.pivot(index=index, columns=columns, values=value).dropna(axis=1)
+    df_panel = df_panel.pivot(index=index, columns=columns, values=value).dropna(axis=1)
+
+    return df_panel[
+        ASSET_CLASSES[:2] + [_ for _ in df_panel.columns if _ not in ASSET_CLASSES[:2]]
+    ]
 
 
 def _get_cov_mat(df_pivot: pd.DataFrame) -> pd.DataFrame:
@@ -26,15 +30,11 @@ def _get_cov_mat(df_pivot: pd.DataFrame) -> pd.DataFrame:
     """
 
     cov_mat = df_pivot.cov()
+    right_order_lst = ASSET_CLASSES[:2] + [
+        _ for _ in cov_mat.columns if _ not in ASSET_CLASSES[:2]
+    ]
 
-    return cov_mat[
-        ASSET_CLASSES[:2] + [_ for _ in cov_mat.columns if _ not in ASSET_CLASSES[:2]]
-    ].reindex(
-        index=ASSET_CLASSES[:2]
-        + [
-            *[_ for _ in cov_mat.columns if _ not in ASSET_CLASSES[:2]],
-        ]
-    )
+    return cov_mat[right_order_lst].reindex(index=right_order_lst)
 
 
 def _get_mean_ret(df_pivot: pd.DataFrame) -> pd.Series:

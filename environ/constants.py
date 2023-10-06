@@ -17,3 +17,15 @@ STABLE_COIN_LIST = ["USD Coin"]
 
 # Asset classes
 ASSET_CLASSES = ["Bitcoin", "Cash", "Other Crypto"]
+
+# global constraints for the optimization
+glob_con = (
+    {
+        "type": "eq",
+        "fun": lambda weight: weight.sum() - 1,
+    },
+    {
+        "type": "ineq",
+        "fun": lambda weight: weight[0] - 2 * weight[2:].sum(),
+    },
+)
