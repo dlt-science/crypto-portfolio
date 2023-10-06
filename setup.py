@@ -14,6 +14,7 @@ setup(
         "matplotlib",
         "tqdm",
         "pycoingecko",
+        "scipy",
     ],
     extras_require={
         "dev": [
