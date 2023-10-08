@@ -28,13 +28,15 @@ if not os.path.exists(DATA_PATH / "crypto_prc_coingecko"):
 
 # iterate through the dict
 for cyrpto, crypto_info in tqdm(processed_crypto_lst.items()):
-    # sleep for 5 second
-    time.sleep(5)
-
-    # fetch the market chart
-    market_chart = cg.get_coin_market_chart_by_id(
-        id=crypto_info["coingecko_id"], vs_currency="usd", days="max"
-    )
+    while True:
+        time.sleep(5)
+        # fetch the market chart
+        market_chart = cg.get_coin_market_chart_by_id(
+            id=crypto_info["coingecko_id"], vs_currency="usd", days="max"
+        )
+        if len(crypto_info) > 0:
+            break
+        time.sleep(5)
 
     # save the market chart
     with open(
