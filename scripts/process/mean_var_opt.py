@@ -9,7 +9,8 @@ from environ.process.mat_op import _panel_to_pivot, get_pivot_mean_cov_mat
 from environ.process.obj_fuc import mean_var_obj
 from scripts.process.preprocess_crypto_panel import date_list, df_crypto_processed
 
-df_res = pd.DataFrame()
+df_ret = pd.DataFrame()
+df_wgt = pd.DataFrame()
 
 # iterate through the date list since the second quarter
 for q_idx in range(len(date_list) - 2):
@@ -45,5 +46,23 @@ for q_idx in range(len(date_list) - 2):
     ].copy()
     df_test_q_pivot = _panel_to_pivot(df_test_q)
 
-    # save the result
-    df_res = pd.concat([df_res, df_test_q_pivot @ res.x])
+    # save the return
+    df_ret = pd.concat([df_ret, df_test_q_pivot @ res.x])
+
+    # save the weight
+    df_wgt = pd.concat(
+        [
+            df_wgt,
+            pd.DataFrame(
+                {
+                    "quarter": [date_list[q_idx + 1] for _ in range(3)],
+                    "name": ["Bitcoin", "Caash", "Others"],
+                    "weight": list(res.x[:2]) + [res.x[2:].sum()],
+                }
+            ),
+        ]
+    )
+
+# calculate the cumulative return
+df_ret = df_ret.rename(columns={0: "ret"})
+df_ret["cum_ret"] = (df_ret["ret"] + 1).cumprod()
