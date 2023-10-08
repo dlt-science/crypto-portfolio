@@ -4,7 +4,7 @@ Script to visualize the weight
 
 import matplotlib.pyplot as plt
 
-from scripts.process.mean_var_opt import df_wgt
+from scripts.process.max_es_adj_sharpe import df_wgt
 
 # plot the weight
 plt.figure(figsize=(12, 8))

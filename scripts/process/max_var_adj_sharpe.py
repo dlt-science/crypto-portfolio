@@ -6,7 +6,7 @@ from scipy.optimize import minimize
 
 from environ.constants import glob_con
 from environ.process.mat_op import _panel_to_pivot, get_pivot_mean_cov_mat
-from environ.process.obj_fuc import tail_risk_opt
+from environ.process.obj_fuc import max_var_adj_sharpe
 from scripts.process.preprocess_crypto_panel import date_list, df_crypto_processed
 
 df_ret = pd.DataFrame()
@@ -30,11 +30,11 @@ for q_idx in range(len(date_list) - 2):
 
     # optimize the weight
     res = minimize(
-        tail_risk_opt,
+        max_var_adj_sharpe,
         # weight init
         # [0, 1] + [0 for _ in range(len(mean_ret) - 2)],
         [1 / len(mean_ret) for _ in range(len(mean_ret))],
-        args=(df_crypto_processed_q_pivot, 0.1),
+        args=(df_crypto_processed_q_pivot, mean_ret, 0.1),
         constraints=glob_con,
         bounds=[(0, 1) for _ in range(len(mean_ret))],
     )

@@ -28,12 +28,28 @@ def min_var_obj(weight: np.ndarray, cov_mat: pd.DataFrame) -> float:
     return weight @ cov_mat @ weight
 
 
-def tail_risk_opt(weight: np.ndarray, pivot: pd.DataFrame, sig: float) -> float:
+def max_var_adj_sharpe(
+    weight: np.ndarray, pivot: pd.DataFrame, mean_ret: pd.DataFrame, sig: float
+) -> float:
     """
     Objective function for the minimum VaR
     """
 
-    return (
+    return -(mean_ret @ weight) / (
+        (pivot @ weight)
+        .sort_values(ascending=True)
+        .iloc[int(len(pivot @ weight) * sig)]
+    )
+
+
+def max_es_adj_sharpe(
+    weight: np.ndarray, pivot: pd.DataFrame, mean_ret: pd.DataFrame, sig: float
+) -> float:
+    """
+    Objective function for the minimum ES
+    """
+
+    return -(mean_ret @ weight) / (
         (pivot @ weight)
         .sort_values(ascending=True)
         .iloc[int(len(pivot @ weight) * sig)]
