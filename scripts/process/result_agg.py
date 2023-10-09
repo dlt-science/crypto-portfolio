@@ -17,6 +17,8 @@ from scripts.process.max_es_adj_sharpe import (
     df_wgt as df_wgt_max_es_adj_sharpe,
 )
 
+from scripts.process.sp_ret import sp_df
+
 # a dict to store the result
 dict_result = {
     "Mean-variance": {
@@ -34,4 +36,12 @@ dict_result = {
         "ret": df_ret_max_es_adj_sharpe,
         "wgt": df_wgt_max_es_adj_sharpe,
     },
+}
+
+# a dict to store the benchmark
+dict_benchmark = {
+    "S&P": {
+        "file_name": "sp",
+        "ret": sp_df,
+    }
 }
