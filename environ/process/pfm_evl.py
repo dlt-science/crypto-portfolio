@@ -13,3 +13,13 @@ def cal_sharpe(
     """
 
     return (df_res.mean() / df_res.std()).values[0]
+
+
+def cal_sortino(
+    df_res: pd.DataFrame,
+):
+    """
+    Function to calculate the sortino ratio
+    """
+
+    return (df_res.mean() / df_res[df_res < 0].std()).values[0]
