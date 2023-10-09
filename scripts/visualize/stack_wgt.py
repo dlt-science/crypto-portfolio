@@ -4,20 +4,21 @@ Script to visualize the weight
 
 import matplotlib.pyplot as plt
 
-from scripts.process.max_es_adj_sharpe import df_wgt
+from scripts.process.result_agg import dict_result
+from environ.constants import FIGURE_PATH
 
-# plot the weight
-plt.figure(figsize=(12, 8))
+for strategy, strategy_info in dict_result.items():
+    df_wgt = strategy_info["wgt"]
+    plt.stackplot(
+        strategy_info["wgt"]["quarter"].unique(),
+        *[
+            strategy_info["wgt"][strategy_info["wgt"]["name"] == name]["weight"]
+            for name in ["Bitcoin", "Caash", "Others"]
+        ],
+        labels=["Bitcoin", "Cash", "Others"],
+    )
 
-plt.stackplot(
-    df_wgt["quarter"].unique(),
-    *[
-        df_wgt[df_wgt["name"] == name]["weight"]
-        for name in ["Bitcoin", "Caash", "Others"]
-    ],
-    labels=["Bitcoin", "Cash", "Others"],
-)
-
-plt.legend()
-
-plt.show()
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(FIGURE_PATH / f"{strategy}_wgt.pdf", dpi=300)
+    plt.close()

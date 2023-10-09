@@ -10,6 +10,8 @@ from environ.settings import PROJECT_ROOT
 DATA_PATH: Path = PROJECT_ROOT / "data"
 PROCESSED_DATA_PATH: Path = PROJECT_ROOT / "processed_data"
 TABLE_PATH: Path = PROJECT_ROOT / "tables"
+FIGURE_PATH: Path = PROJECT_ROOT / "figures"
+
 
 # Crypto to exclude from swiss quote
 LOW_VOL_LIST = ["0x", "Audius", "Bancor"]
