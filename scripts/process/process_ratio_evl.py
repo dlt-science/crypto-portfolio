@@ -24,12 +24,14 @@ for strategy, strategy_info in dict_result.items():
             pd.DataFrame(
                 [
                     [
+                        strategy_info["ret"]["ret"].mean(),
+                        strategy_info["ret"]["ret"].std(),
                         cal_sharpe(strategy_info["ret"]),
                         cal_sortino(strategy_info["ret"]),
                     ]
                 ],
                 index=[strategy],
-                columns=["Sharpe Ratio", "Sortino Ratio"],
+                columns=["Avg Return", "Std", "Sharpe Ratio", "Sortino Ratio"],
             ),
         ]
     )
@@ -40,12 +42,14 @@ for strategy, strategy_info in dict_result.items():
             pd.DataFrame(
                 [
                     [
+                        strategy_info["ret"]["ret"].mean(),
+                        strategy_info["ret"]["ret"].std(),
                         cal_sharpe(boom_split(strategy_info["ret"])[0]),
                         cal_sortino(boom_split(strategy_info["ret"])[0]),
                     ]
                 ],
                 index=[strategy],
-                columns=["Sharpe Ratio", "Sortino Ratio"],
+                columns=["Avg Return", "Std", "Sharpe Ratio", "Sortino Ratio"],
             ),
         ]
     )
@@ -56,12 +60,14 @@ for strategy, strategy_info in dict_result.items():
             pd.DataFrame(
                 [
                     [
+                        strategy_info["ret"]["ret"].mean(),
+                        strategy_info["ret"]["ret"].std(),
                         cal_sharpe(boom_split(strategy_info["ret"])[1]),
                         cal_sortino(boom_split(strategy_info["ret"])[1]),
                     ]
                 ],
                 index=[strategy],
-                columns=["Sharpe Ratio", "Sortino Ratio"],
+                columns=["Avg Return", "Std", "Sharpe Ratio", "Sortino Ratio"],
             ),
         ]
     )
