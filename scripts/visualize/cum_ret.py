@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from environ.constants import FIGURE_PATH
 from scripts.process.boom_bust import BOOM_BUST
-from scripts.process.result_agg import dict_benchmark, dict_result
+from scripts.process.result_agg import dict_result
 
 # plot the cumulative return
 plt.figure(figsize=(12, 8))
@@ -18,12 +18,6 @@ for strategy, strategy_info in dict_result.items():
         label=strategy,
     )
 
-# plot the benchmark
-for benchmark, benchmark_info in dict_benchmark.items():
-    plt.plot(
-        benchmark_info["ret"].set_index("date")["cum_ret"],
-        label=benchmark,
-    )
 
 # plot the boom bust periods and legend
 for i in BOOM_BUST:

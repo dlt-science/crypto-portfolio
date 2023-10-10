@@ -15,8 +15,12 @@ dict_result["S\&P"] = {
     "type": "benchmark",
     "ret": sp_df,
 }
+
+# isolate the BTC
+df_btc = df_crypto_processed[df_crypto_processed["symbol"] == "BTC"].copy()
+df_btc["cum_ret"] = (df_btc["ret"] + 1).cumprod()
 dict_result["BTC"] = {
     "file_name": "btc",
     "type": "benchmark",
-    "ret": df_crypto_processed[df_crypto_processed["symbol"] == "BTC"].copy(),
+    "ret": df_btc,
 }
