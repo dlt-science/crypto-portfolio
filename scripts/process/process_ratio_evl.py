@@ -42,8 +42,8 @@ for strategy, strategy_info in dict_result.items():
             pd.DataFrame(
                 [
                     [
-                        strategy_info["ret"]["ret"].mean(),
-                        strategy_info["ret"]["ret"].std(),
+                        boom_split(strategy_info["ret"])[0]["ret"].mean(),
+                        boom_split(strategy_info["ret"])[0]["ret"].std(),
                         cal_sharpe(boom_split(strategy_info["ret"])[0]),
                         cal_sortino(boom_split(strategy_info["ret"])[0]),
                     ]
@@ -60,8 +60,8 @@ for strategy, strategy_info in dict_result.items():
             pd.DataFrame(
                 [
                     [
-                        strategy_info["ret"]["ret"].mean(),
-                        strategy_info["ret"]["ret"].std(),
+                        boom_split(strategy_info["ret"])[1]["ret"].mean(),
+                        boom_split(strategy_info["ret"])[1]["ret"].std(),
                         cal_sharpe(boom_split(strategy_info["ret"])[1]),
                         cal_sortino(boom_split(strategy_info["ret"])[1]),
                     ]
