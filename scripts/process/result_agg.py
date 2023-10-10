@@ -3,32 +3,12 @@ Script to aggregate the result
 """
 
 from environ.process.boom_split import boom_split
-from scripts.process.max_es_adj_sharpe import df_ret as df_ret_max_es_adj_sharpe
-from scripts.process.max_es_adj_sharpe import df_wgt as df_wgt_max_es_adj_sharpe
-from scripts.process.max_var_adj_sharpe import df_ret as df_ret_max_var_adj_sharpe
-from scripts.process.max_var_adj_sharpe import df_wgt as df_wgt_max_var_adj_sharpe
-from scripts.process.mean_var_opt import df_ret as df_ret_mean_var
-from scripts.process.mean_var_opt import df_wgt as df_wgt_mean_var
+from environ.process.optimization import freq_iterate
+from scripts.process.preprocess_crypto_panel import df_crypto_processed
 from scripts.process.sp_ret import sp_df
 
 # a dict to store the result
-dict_result = {
-    "Mean-variance": {
-        "file_name": "mean_var",
-        "ret": df_ret_mean_var,
-        "wgt": df_wgt_mean_var,
-    },
-    "VaR-adj sharpe": {
-        "file_name": "max_var_adj_sharpe",
-        "ret": df_ret_max_var_adj_sharpe,
-        "wgt": df_wgt_max_var_adj_sharpe,
-    },
-    "ES-adj sharpe": {
-        "file_name": "max_es_adj_sharpe",
-        "ret": df_ret_max_es_adj_sharpe,
-        "wgt": df_wgt_max_es_adj_sharpe,
-    },
-}
+dict_result = freq_iterate(df_crypto_processed)
 
 
 # a dict to store the boom and bust periods
