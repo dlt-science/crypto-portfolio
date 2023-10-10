@@ -66,3 +66,6 @@ for q_idx in range(len(date_list) - 2):
 # calculate the cumulative return
 df_ret = df_ret.rename(columns={0: "ret"})
 df_ret["cum_ret"] = (df_ret["ret"] + 1).cumprod()
+
+# reset the index
+df_ret = df_ret.reset_index().rename(columns={"index": "date"})
