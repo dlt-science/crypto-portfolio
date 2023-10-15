@@ -97,7 +97,10 @@ def freq_iterate(
 
     # calculate the cumulative return
     for _, strategy_info in dict_result.items():
-        strategy_info["ret"] = strategy_info["ret"].reset_index().rename(columns={0: "ret", "index": "date"})
+        strategy_info["ret"] = (strategy_info["ret"]
+                                .reset_index()
+                                .rename(columns={0: "ret", "index": "date"})
+        )
         strategy_info["ret"]["cum_ret"] = (strategy_info["ret"]["ret"] + 1).cumprod()
 
     return dict_result
@@ -122,7 +125,8 @@ def var_related_opt(
         obj_fuc,
         # weight init
         # [0, 1] + [0 for _ in range(len(mean_ret) - 2)],
-        [1 / len(mean_ret) for _ in range(len(mean_ret))],
+        # [1 / len(mean_ret) for _ in range(len(mean_ret))],
+        [0.5, 0.3] + [0.2 / (len(mean_ret) - 2) for _ in range(len(mean_ret) - 2)],
         args=(df_crypto_processed_q_pivot, mean_ret, sig),
         constraints=glob_con,
         bounds=[(0, 1) for _ in range(len(mean_ret))],
@@ -141,7 +145,7 @@ def var_related_opt(
         pd.DataFrame(
             {
                 "quarter": [end_date for _ in range(3)],
-                "name": ["Bitcoin", "Caash", "Others"],
+                "name": ["Bitcoin", "Cash", "Others"],
                 "weight": list(res.x[:2]) + [res.x[2:].sum()],
             }
         ),
@@ -166,7 +170,8 @@ def mean_var_opt(
         obj_fuc,
         # weight init
         # [0, 1] + [0 for _ in range(len(mean_ret) - 2)],
-        [1 / len(mean_ret) for _ in range(len(mean_ret))],
+        # [1 / len(mean_ret) for _ in range(len(mean_ret))],
+        [0.5, 0.3] + [0.2 / len(mean_ret) for _ in range(len(mean_ret) - 2)],
         args=(mean_ret, cov_mat),
         constraints=glob_con,
         bounds=[(0, 1) for _ in range(len(mean_ret))],
@@ -183,7 +188,9 @@ def mean_var_opt(
     return df_test_q_pivot @ res.x, pd.DataFrame(
         {
             "quarter": [end_date for _ in range(3)],
-            "name": ["Bitcoin", "Caash", "Others"],
+            "name": ["Bitcoin", "Cash", "Others"],
             "weight": list(res.x[:2]) + [res.x[2:].sum()],
         }
     )
+
+

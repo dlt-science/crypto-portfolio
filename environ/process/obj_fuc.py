@@ -39,7 +39,7 @@ def max_var_adj_sharpe(
     return -(mean_ret @ weight) / (
         (pivot @ weight)
         .sort_values(ascending=True)
-        .iloc[int(len(pivot @ weight) * sig)]
+        .iloc[round(len(pivot @ weight) * sig)]
     )
 
 
@@ -54,6 +54,6 @@ def max_es_adj_sharpe(
     return -(mean_ret @ weight) / (
         (pivot @ weight)
         .sort_values(ascending=True)
-        .head(int(len(pivot @ weight) * sig))
+        .head(round(len(pivot @ weight) * sig))
         .mean()
     )

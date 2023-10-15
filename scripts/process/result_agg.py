@@ -9,6 +9,7 @@ from scripts.process.sp_ret import sp_df
 # a dict to store the result
 dict_result = freq_iterate(df_crypto_processed)
 
+
 # add the benchmark
 dict_result["S\&P"] = {
     "file_name": "sp500",
