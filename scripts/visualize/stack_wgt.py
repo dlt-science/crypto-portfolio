@@ -58,5 +58,5 @@ for strategy, strategy_info in dict_result.items():
 
     plt.legend()
     plt.tight_layout()
-    plt.savefig(FIGURE_PATH / f"{strategy}_wgt.pdf", dpi=300)
+    plt.savefig(FIGURE_PATH / f"{strategy}_wgt.pdf".replace(" ", "_"), dpi=300)
     plt.close()
