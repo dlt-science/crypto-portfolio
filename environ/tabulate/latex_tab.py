@@ -8,7 +8,10 @@ from typing import Union
 import pandas as pd
 
 
-def gen_latex_tab(df_res: pd.DataFrame, save_path: Union[str, Path]) -> None:
+def gen_latex_tab(
+    df_res: pd.DataFrame,
+    save_path: Union[str, Path],
+) -> None:
     """
     Function to generate LaTeX table using the key as key,
     first column as index, and the rest as columns
