@@ -76,7 +76,7 @@ def freq_iterate(
                     ret, wgt = mean_var_opt(
                         df_train_q,
                         df_test_q,
-                        date_list[q_idx + 1],
+                        date_list[q_idx + 1] + pd.Timedelta(days=1),
                         strategy_info["opt_func"],
                     )
 
@@ -84,7 +84,7 @@ def freq_iterate(
                     ret, wgt = var_related_opt(
                         df_train_q,
                         df_test_q,
-                        date_list[q_idx + 1],
+                        date_list[q_idx + 1] + pd.Timedelta(days=1),
                         strategy_info["opt_func"],
                         strategy_info["sig"]
                     )
@@ -109,7 +109,7 @@ def freq_iterate(
 def var_related_opt(
     df_train_q: pd.DataFrame,
     df_test_q: pd.DataFrame,
-    end_date: pd.Timestamp,
+    test_start_date: pd.Timestamp,
     obj_fuc: Callable,
     sig: float,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -144,9 +144,9 @@ def var_related_opt(
         df_test_q_pivot @ res.x,
         pd.DataFrame(
             {
-                "quarter": [end_date for _ in range(3)],
-                "name": ["Bitcoin", "Cash", "Others"],
-                "weight": list(res.x[:2]) + [res.x[2:].sum()],
+                "quarter": [test_start_date for _ in range(len(df_crypto_processed_q_pivot.columns))],
+                "name": df_crypto_processed_q_pivot.columns,
+                "weight": res.x,
             }
         ),
     )
@@ -155,7 +155,7 @@ def var_related_opt(
 def mean_var_opt(
     df_train_q: pd.DataFrame,
     df_test_q: pd.DataFrame,
-    end_date: pd.Timestamp,
+    test_start_date: pd.Timestamp,
     obj_fuc: Callable,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
@@ -187,10 +187,8 @@ def mean_var_opt(
     # return the return and weight
     return df_test_q_pivot @ res.x, pd.DataFrame(
         {
-            "quarter": [end_date for _ in range(3)],
-            "name": ["Bitcoin", "Cash", "Others"],
-            "weight": list(res.x[:2]) + [res.x[2:].sum()],
+            "quarter": [test_start_date for _ in range(len(df_crypto_processed_q_pivot.columns))],
+            "name": df_crypto_processed_q_pivot.columns,
+            "weight": res.x,
         }
     )
-
-

@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 
 from environ.constants import FIGURE_PATH
 from scripts.process.boom_bust import BOOM_BUST
-from scripts.process.result_agg import dict_result
+from scripts.process.result_agg import dict_result_with_benchmark
 
 # plot the cumulative return
 plt.figure(figsize=(12, 8))
 
 # plot the strategy
-for strategy, strategy_info in dict_result.items():
+for strategy, strategy_info in dict_result_with_benchmark.items():
     plt.plot(
         strategy_info["ret"].set_index("date")["cum_ret"],
         label=strategy,

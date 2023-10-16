@@ -9,9 +9,9 @@ from scripts.process.sp_ret import sp_df
 # a dict to store the result
 dict_result = freq_iterate(df_crypto_processed)
 
-
 # add the benchmark
-dict_result["S\&P"] = {
+dict_result_with_benchmark = dict_result.copy()
+dict_result_with_benchmark["S\&P"] = {
     "file_name": "sp500",
     "type": "benchmark",
     "ret": sp_df,
@@ -20,7 +20,7 @@ dict_result["S\&P"] = {
 # isolate the BTC
 df_btc = df_crypto_processed[df_crypto_processed["symbol"] == "BTC"].copy()
 df_btc["cum_ret"] = (df_btc["ret"] + 1).cumprod()
-dict_result["BTC"] = {
+dict_result_with_benchmark["BTC"] = {
     "file_name": "btc",
     "type": "benchmark",
     "ret": df_btc,

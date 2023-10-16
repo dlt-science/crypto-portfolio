@@ -32,3 +32,15 @@ def boom_split(df_res: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
             )
 
     return pd.concat(df_boom), pd.concat(df_bust)
+
+
+def boom_check(date: pd.Timestamp) -> str:
+    """
+    Function to check the boom period
+    """
+
+    for period in BOOM_BUST:
+        if date >= period["start"] and date < period["end"]:
+            return period["main_trend"]
+
+    return "none"
