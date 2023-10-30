@@ -26,8 +26,12 @@ glob_con = (
         "type": "eq",
         "fun": lambda weight: weight.sum() - 1,
     },
+    # {
+    #     "type": "ineq",
+    #     "fun": lambda weight: weight[0] - 2 * weight[2:].sum(),
+    # },
     {
         "type": "ineq",
-        "fun": lambda weight: weight[0] - 2 * weight[2:].sum(),
+        "fun": lambda weight: 1 / 3 - weight[0] - weight[2:].sum(),
     },
 )
