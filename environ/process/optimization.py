@@ -7,7 +7,7 @@ from typing import Callable
 import pandas as pd
 from scipy.optimize import minimize
 
-from environ.constants import glob_con
+from environ.constants import INITIAL_WEALTH, TRANSACTION_COST, glob_con
 from environ.process.mat_op import _panel_to_pivot, get_pivot_mean_cov_mat
 from environ.process.obj_fuc import (max_es_adj_sharpe, max_var_adj_sharpe,
                                      mean_var_obj)
@@ -23,14 +23,20 @@ def freq_iterate(
     Function to iterate through the frequency
     """
 
+    # a dict to store the common result
+    dict_common = {
+        "ret": pd.DataFrame(),
+        "wgt": pd.DataFrame(),
+        "q_ret": pd.DataFrame(),
+    }
+
     # a dict to store the result
     dict_result = {
         "Mean-variance": {
             "file_name": "mean_var",
             "type": "mean_var_opt",
             "opt_func": mean_var_obj,
-            "ret": pd.DataFrame(),
-            "wgt": pd.DataFrame(),
+            **dict_common,
         },
         **{
             f"VaR-adj sharpe {sig}": {
@@ -38,8 +44,7 @@ def freq_iterate(
                 "type": "var_related_opt",
                 "opt_func": max_var_adj_sharpe,
                 "sig": sig,
-                "ret": pd.DataFrame(),
-                "wgt": pd.DataFrame(),
+                **dict_common,
             }
             for sig in SIG_LIST
         },
@@ -49,8 +54,7 @@ def freq_iterate(
                 "type": "var_related_opt",
                 "opt_func": max_es_adj_sharpe,
                 "sig": sig,
-                "ret": pd.DataFrame(),
-                "wgt": pd.DataFrame(),
+                **dict_common,
             }
             for sig in SIG_LIST
         },
@@ -89,6 +93,8 @@ def freq_iterate(
                         strategy_info["sig"]
                     )
 
+            ret = ret.reset_index().rename(columns={"index": "date", 0:"ret"}).set_index("date")
+
             # save the return
             strategy_info["ret"] = pd.concat([strategy_info["ret"], ret])
 
@@ -97,11 +103,83 @@ def freq_iterate(
 
     # calculate the cumulative return
     for _, strategy_info in dict_result.items():
+
+        # a dataframe to store the investment value
+        investment_value_df = pd.DataFrame(
+            {
+                "date": [strategy_info["ret"].index[0]],
+                "investment_value": [INITIAL_WEALTH],
+            }
+        )     
+
+        # get the pivot table for the wgt
+        df_wgt = strategy_info["wgt"]
+        df_wgt_pivot = df_wgt.pivot(index="quarter", columns="name", values="weight").drop(columns="Cash")
+        df_ret = strategy_info["ret"].reset_index().rename(columns={"index": "date"})
+
+
+        # iterate throught the df_wgt_pivot
+        for idx in range(len(df_wgt_pivot)-1):
+
+            # get the date for the idx
+            date = df_wgt_pivot.index[idx]
+            date_next = df_wgt_pivot.index[idx + 1]
+
+            # get the weight
+            wgt = df_wgt_pivot.loc[date]
+            wgt_next = df_wgt_pivot.loc[date_next]
+
+            # get the investment value before the period
+            investment_value_before = (
+                investment_value_df.iloc[-1]["investment_value"]
+            )
+            # get the investment value after the period before transaction cost
+            investment_value_after = (
+                investment_value_before * (df_ret.loc[(df_ret["date"] >= date) & (df_ret["date"] < date_next), "ret"] + 1).cumprod().iloc[-1]
+            )
+
+            # get the transaction cost
+            transaction_cost = (
+                abs(wgt_next * investment_value_after - wgt * investment_value_before).sum() * TRANSACTION_COST
+            )
+
+            # get the investment value after the period after transaction cost
+            investment_value_after = investment_value_after - transaction_cost
+
+            # calculate the quarter return
+            strategy_info["q_ret"] = pd.concat(
+                [
+                    strategy_info["q_ret"],
+                    pd.DataFrame(
+                        {
+                            "date": date,
+                            "ret": [(investment_value_after - investment_value_before) / investment_value_before],
+                        }
+                    ),
+                ]
+            )
+
+            # append the investment value
+            investment_value_df = pd.concat(
+                [
+                    investment_value_df,
+                    pd.DataFrame(
+                        {
+                            "date": date,
+                            "investment_value": [investment_value_after],
+                        }
+                    ),
+                ]
+            )
+
+
         strategy_info["ret"] = (strategy_info["ret"]
                                 .reset_index()
-                                .rename(columns={0: "ret", "index": "date"})
+                                .rename(columns={"index": "date"})
         )
+        # calculate the cumulative return
         strategy_info["ret"]["cum_ret"] = (strategy_info["ret"]["ret"] + 1).cumprod()
+        strategy_info["q_ret"]["cum_ret"] = (strategy_info["q_ret"]["ret"] + 1).cumprod()
 
     return dict_result
 

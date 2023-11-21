@@ -14,7 +14,7 @@ plt.figure(figsize=(12, 8))
 # plot the strategy
 for strategy, strategy_info in dict_result_with_benchmark.items():
     plt.plot(
-        strategy_info["ret"].set_index("date")["cum_ret"],
+        strategy_info["q_ret"].set_index("date")["cum_ret"],
         label=strategy,
     )
 

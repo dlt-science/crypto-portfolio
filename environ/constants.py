@@ -20,6 +20,12 @@ STABLE_COIN_LIST = ["USD Coin"]
 # Asset classes
 ASSET_CLASSES = ["Bitcoin", "Cash", "Other Crypto"]
 
+# Initial Weath
+INITIAL_WEALTH = 1_000_000
+
+# Transaction cost
+TRANSACTION_COST = 0.008
+
 # global constraints for the optimization
 glob_con = (
     {

@@ -14,4 +14,4 @@ sp_df = sp_df.dropna().reset_index(drop=True)
 
 # convert the date in DD/MM/YYYY to datetime
 sp_df["date"] = pd.to_datetime(sp_df["Date"], format="%d/%m/%Y")
-sp_df.set_index("Date", inplace=True)
+# sp_df.set_index("Date", inplace=True)
