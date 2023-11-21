@@ -47,7 +47,7 @@ df_btc["cum_ret"] = (df_btc["ret"] + 1).cumprod()
 df_btc_q["cum_ret"] = (df_btc_q["ret"] + 1).cumprod()
 sp_q_df["cum_ret"] = (sp_q_df["ret"] + 1).cumprod()
 
-dict_result_with_benchmark["S&P"] = {
+dict_result_with_benchmark["S\&P"] = {
     "file_name": "sp500",
     "type": "benchmark",
     "ret": sp_df,
