@@ -16,10 +16,10 @@ for period, period_info in PLOT_DICT.items():
         df_wgt_pivot = df_wgt.pivot(index="quarter", columns="name", values="weight")
 
         # plot the stake bar chart using the token-color mapping
-        df_wgt_pivot.plot.bar(stacked=True, colormap=cmap, figsize=(12, 8))
+        df_wgt_pivot.plot.bar(stacked=True, colormap=cmap, figsize=(12, 7))
 
         # let the legend be left outside the plot and large font
-        plt.legend(loc="center left", bbox_to_anchor=(1, 0.5), fontsize=FONT_SIZE)
+        plt.legend(loc="center left", bbox_to_anchor=(1, 0.5), fontsize=17)
 
         # let x ticks and y ticks be large font
         plt.xticks(fontsize=FONT_SIZE)
