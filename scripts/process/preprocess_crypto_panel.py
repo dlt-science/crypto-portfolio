@@ -33,13 +33,20 @@ df_crypto_without_missing_date["ret"] = df_crypto_without_missing_date.groupby("
 ].pct_change()
 df_crypto_without_missing_date.dropna(inplace=True)
 
-# get the min date of the panel
-min_date = df_crypto_without_missing_date["date"].min()
+# Set the min date as the date that all crypto are available
+min_date = (df_crypto_without_missing_date.groupby(["name"])["date"].min()).max()
 max_date = df_crypto_without_missing_date["date"].max()
-date_list = pd.date_range(min_date, max_date, freq="Q").tolist()
-df_crypto_without_missing_date["quarter"] = df_crypto_without_missing_date["date"].isin(
-    date_list
-)
+
+# isolate the data after the min date
+df_crypto_without_missing_date = df_crypto_without_missing_date[
+    df_crypto_without_missing_date["date"] >= min_date
+]
+
+# add the quarter information
+date_list = [
+    _ + pd.Timedelta(days=1)
+    for _ in pd.date_range(min_date, max_date, freq="Q").tolist()
+]
 
 # finish data preprocessing
 df_crypto_processed = df_crypto_without_missing_date.copy()

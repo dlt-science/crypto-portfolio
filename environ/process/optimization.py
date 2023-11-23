@@ -7,10 +7,11 @@ from typing import Callable
 import pandas as pd
 from scipy.optimize import minimize
 
-from environ.constants import INITIAL_WEALTH, TRANSACTION_COST, glob_con
+from environ.constants import glob_con
 from environ.process.mat_op import _panel_to_pivot, get_pivot_mean_cov_mat
 from environ.process.obj_fuc import (max_es_adj_sharpe, max_var_adj_sharpe,
                                      mean_var_obj)
+from environ.process.txn_fee import wealth
 from scripts.process.preprocess_crypto_panel import date_list
 
 SIG_LIST = [0.1, 0.05, 0.01]
@@ -27,7 +28,7 @@ def freq_iterate(
     dict_common = {
         "ret": pd.DataFrame(),
         "wgt": pd.DataFrame(),
-        "q_ret": pd.DataFrame(),
+        "wealth": pd.DataFrame(),
     }
 
     # a dict to store the result
@@ -64,13 +65,13 @@ def freq_iterate(
     for q_idx in range(len(date_list) - 2):
         # isolate the data for the quarter
         df_train_q = df_crypto_processed[
-            (df_crypto_processed["date"] >= date_list[q_idx] + pd.Timedelta(days=1))
-            & (df_crypto_processed["date"] <= date_list[q_idx + 1])
+            (df_crypto_processed["date"] >= date_list[q_idx])
+            & (df_crypto_processed["date"] < date_list[q_idx + 1])
         ].copy()
 
         df_test_q = df_crypto_processed[
-            (df_crypto_processed["date"] >= date_list[q_idx + 1] + pd.Timedelta(days=1))
-            & (df_crypto_processed["date"] <= date_list[q_idx + 2])
+            (df_crypto_processed["date"] >= date_list[q_idx + 1])
+            & (df_crypto_processed["date"] < date_list[q_idx + 2])
         ].copy()
 
         for _, strategy_info in dict_result.items():
@@ -80,7 +81,7 @@ def freq_iterate(
                     ret, wgt = mean_var_opt(
                         df_train_q,
                         df_test_q,
-                        date_list[q_idx + 1] + pd.Timedelta(days=1),
+                        date_list[q_idx + 1],
                         strategy_info["opt_func"],
                     )
 
@@ -88,98 +89,29 @@ def freq_iterate(
                     ret, wgt = var_related_opt(
                         df_train_q,
                         df_test_q,
-                        date_list[q_idx + 1] + pd.Timedelta(days=1),
+                        date_list[q_idx + 1],
                         strategy_info["opt_func"],
                         strategy_info["sig"]
                     )
 
-            ret = ret.reset_index().rename(columns={"index": "date", 0:"ret"}).set_index("date")
-
             # save the return
-            strategy_info["ret"] = pd.concat([strategy_info["ret"], ret])
+            ret = ret.reset_index().rename(columns={"index": "date",  # type: ignore
+                                                    0:"ret"}).set_index("date")
+            ret["cum_ret"] = (ret["ret"] + 1).cumprod()
+            strategy_info["ret"] = pd.concat([
+                strategy_info["ret"], 
+                ret # type: ignore
+])
 
             # save the weight
-            strategy_info["wgt"] = pd.concat([strategy_info["wgt"], wgt])
+            strategy_info["wgt"] = pd.concat([strategy_info["wgt"], wgt]) # type: ignore
 
-    # calculate the cumulative return
     for _, strategy_info in dict_result.items():
-
-        # a dataframe to store the investment value
-        investment_value_df = pd.DataFrame(
-            {
-                "date": [strategy_info["ret"].index[0]],
-                "investment_value": [INITIAL_WEALTH],
-            }
-        )     
-
-        # get the pivot table for the wgt
-        df_wgt = strategy_info["wgt"]
-        df_wgt_pivot = df_wgt.pivot(index="quarter", columns="name", values="weight").drop(columns="Cash")
-        df_ret = strategy_info["ret"].reset_index().rename(columns={"index": "date"})
-
-
-        # iterate throught the df_wgt_pivot
-        for idx in range(len(df_wgt_pivot)-1):
-
-            # get the date for the idx
-            date = df_wgt_pivot.index[idx]
-            date_next = df_wgt_pivot.index[idx + 1]
-
-            # get the weight
-            wgt = df_wgt_pivot.loc[date]
-            wgt_next = df_wgt_pivot.loc[date_next]
-
-            # get the investment value before the period
-            investment_value_before = (
-                investment_value_df.iloc[-1]["investment_value"]
-            )
-            # get the investment value after the period before transaction cost
-            investment_value_after = (
-                investment_value_before * (df_ret.loc[(df_ret["date"] >= date) & (df_ret["date"] < date_next), "ret"] + 1).cumprod().iloc[-1]
-            )
-
-            # get the transaction cost
-            transaction_cost = (
-                abs(wgt_next * investment_value_after - wgt * investment_value_before).sum() * TRANSACTION_COST
-            )
-
-            # get the investment value after the period after transaction cost
-            investment_value_after = investment_value_after - transaction_cost
-
-            # calculate the quarter return
-            strategy_info["q_ret"] = pd.concat(
-                [
-                    strategy_info["q_ret"],
-                    pd.DataFrame(
-                        {
-                            "date": date,
-                            "ret": [(investment_value_after - investment_value_before) / investment_value_before],
-                        }
-                    ),
-                ]
-            )
-
-            # append the investment value
-            investment_value_df = pd.concat(
-                [
-                    investment_value_df,
-                    pd.DataFrame(
-                        {
-                            "date": date,
-                            "investment_value": [investment_value_after],
-                        }
-                    ),
-                ]
-            )
-
-
-        strategy_info["ret"] = (strategy_info["ret"]
-                                .reset_index()
-                                .rename(columns={"index": "date"})
-        )
-        # calculate the cumulative return
-        strategy_info["ret"]["cum_ret"] = (strategy_info["ret"]["ret"] + 1).cumprod()
-        strategy_info["q_ret"]["cum_ret"] = (strategy_info["q_ret"]["ret"] + 1).cumprod()
+        # calculate the wealth
+        strategy_info["wealth"] = pd.DataFrame(wealth(
+                    strategy_info["ret"],
+                    strategy_info["wgt"],
+                ))
 
     return dict_result
 
@@ -222,9 +154,9 @@ def var_related_opt(
         df_test_q_pivot @ res.x,
         pd.DataFrame(
             {
-                "quarter": [test_start_date for _ in range(len(df_crypto_processed_q_pivot.columns))],
-                "name": df_crypto_processed_q_pivot.columns,
-                "weight": res.x,
+            "quarter": [test_start_date for _ in range(len(df_crypto_processed_q_pivot.columns))],
+            "name": df_crypto_processed_q_pivot.columns,
+            "weight": res.x,
             }
         ),
     )
