@@ -17,27 +17,34 @@ result_dict = {}
 
 # a dict to store the result
 
-for slow_weight in tqdm(pct_list):
-    for medium_in_medium_fast_weight in pct_list:
-        dict_result = freq_iterate(
-            df_crypto_processed,
-            slow_medium_pct=[
-                slow_weight,
-                (1 - slow_weight) * medium_in_medium_fast_weight,
-            ],
+for cash_con in ["0.1", "0.33"]:
+    for slow_weight in tqdm(pct_list):
+        for medium_in_medium_fast_weight in pct_list:
+            dict_result = freq_iterate(
+                df_crypto_processed,
+                slow_medium_pct=[
+                    slow_weight,
+                    (1 - slow_weight) * medium_in_medium_fast_weight,
+                ],
+                cash_con="0.1",
+            )
+
+            for strategy, strategy_info in dict_result.items():
+                if strategy not in result_dict.keys():
+                    result_dict[strategy] = pd.DataFrame(
+                        columns=pct_list, index=pct_list
+                    )
+
+                result_dict[strategy].loc[
+                    slow_weight, medium_in_medium_fast_weight
+                ] = strategy_info["ret"]["ret"].mean()
+
+    for strategy, df in result_dict.items():
+        sns.heatmap(df.astype(float), annot=True, cmap=CMAP)
+        # save the figure
+        plt.tight_layout()
+        plt.savefig(
+            f"{FIGURE_PATH}/{strategy}_heatmap_{cash_con}.pdf".replace(" ", "_"),
+            dpi=300,
         )
-
-        for strategy, strategy_info in dict_result.items():
-            if strategy not in result_dict.keys():
-                result_dict[strategy] = pd.DataFrame(columns=pct_list, index=pct_list)
-
-            result_dict[strategy].loc[
-                slow_weight, medium_in_medium_fast_weight
-            ] = strategy_info["ret"]["ret"].mean()
-
-for strategy, df in result_dict.items():
-    sns.heatmap(df.astype(float), annot=True, cmap=CMAP)
-    # save the figure
-    plt.tight_layout()
-    plt.savefig(f"{FIGURE_PATH}/{strategy}_heatmap.pdf", dpi=300)
-    plt.close()
+        plt.close()
