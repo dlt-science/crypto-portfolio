@@ -26,18 +26,33 @@ INITIAL_WEALTH = 1_000_000
 # Transaction cost
 TRANSACTION_COST = 0.008
 
-# global constraints for the optimization
-glob_con = (
-    {
-        "type": "eq",
-        "fun": lambda weight: weight.sum() - 1,
-    },
-    # {
-    #     "type": "ineq",
-    #     "fun": lambda weight: weight[0] - 2 * weight[2:].sum(),
-    # },
-    {
-        "type": "ineq",
-        "fun": lambda weight: 1 / 3 - weight[2:].sum(),
-    },
-)
+glob_con = {
+    "0.1": (
+        {
+            "type": "eq",
+            "fun": lambda weight: weight.sum() - 1,
+        },
+        {
+            "type": "ineq",
+            "fun": lambda weight: 1 / 10 - weight[1],
+        },
+        {
+            "type": "ineq",
+            "fun": lambda weight: 1 / 3 - weight[2:].sum(),
+        },
+    ),
+    "0.33": (
+        {
+            "type": "eq",
+            "fun": lambda weight: weight.sum() - 1,
+        },
+        {
+            "type": "ineq",
+            "fun": lambda weight: 1 / 3 - weight[1],
+        },
+        {
+            "type": "ineq",
+            "fun": lambda weight: 1 / 3 - weight[2:].sum(),
+        },
+    ),
+}

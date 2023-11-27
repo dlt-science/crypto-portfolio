@@ -6,7 +6,6 @@ import pandas as pd
 
 from scripts.process.merge_crypto_panel import df_crypto
 
-
 # convert the timestamp to datetime
 df_crypto.sort_values(["name", "timestamp"], ascending=True, inplace=True)
 df_crypto["date"] = pd.to_datetime(df_crypto["timestamp"], unit="ms")
@@ -14,6 +13,9 @@ df_crypto["date"] = df_crypto["date"].dt.strftime("%Y-%m-%d")
 df_crypto.drop_duplicates(subset=["name", "date"], inplace=True, keep="first")
 df_crypto.drop(columns=["timestamp"], inplace=True)
 df_crypto["date"] = pd.to_datetime(df_crypto["date"])
+
+# minus the date by 1
+df_crypto["date"] = df_crypto["date"] - pd.Timedelta(days=1)
 
 # ffill the missing date
 df_crypto_without_missing_date = []

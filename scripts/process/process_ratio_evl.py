@@ -17,6 +17,8 @@ df_ratio_evl_whole_latex, df_ratio_evl_boom_latex, df_ratio_evl_bust_latex = (
 )
 
 for strategy, strategy_info in dict_result_with_benchmark.items():
+    df_ret = strategy_info["ret"].reset_index()
+
     # append a row with index as strategy and columns as evaluation metrics
     df_ratio_evl_whole_latex = pd.concat(
         [
@@ -24,10 +26,10 @@ for strategy, strategy_info in dict_result_with_benchmark.items():
             pd.DataFrame(
                 [
                     [
-                        strategy_info["q_ret"]["ret"].mean(),
-                        strategy_info["q_ret"]["ret"].std(),
-                        cal_sharpe(strategy_info["q_ret"]),
-                        cal_sortino(strategy_info["q_ret"]),
+                        df_ret["ret"].mean(),
+                        df_ret["ret"].std(),
+                        cal_sharpe(df_ret),
+                        cal_sortino(df_ret),
                     ]
                 ],
                 index=[strategy],
@@ -42,10 +44,10 @@ for strategy, strategy_info in dict_result_with_benchmark.items():
             pd.DataFrame(
                 [
                     [
-                        boom_split(strategy_info["q_ret"])[0]["ret"].mean(),
-                        boom_split(strategy_info["q_ret"])[0]["ret"].std(),
-                        cal_sharpe(boom_split(strategy_info["q_ret"])[0]),
-                        cal_sortino(boom_split(strategy_info["q_ret"])[0]),
+                        boom_split(df_ret)[0]["ret"].mean(),
+                        boom_split(df_ret)[0]["ret"].std(),
+                        cal_sharpe(boom_split(df_ret)[0]),
+                        cal_sortino(boom_split(df_ret)[0]),
                     ]
                 ],
                 index=[strategy],
@@ -60,10 +62,10 @@ for strategy, strategy_info in dict_result_with_benchmark.items():
             pd.DataFrame(
                 [
                     [
-                        boom_split(strategy_info["q_ret"])[1]["ret"].mean(),
-                        boom_split(strategy_info["q_ret"])[1]["ret"].std(),
-                        cal_sharpe(boom_split(strategy_info["q_ret"])[1]),
-                        cal_sortino(boom_split(strategy_info["q_ret"])[1]),
+                        boom_split(df_ret)[1]["ret"].mean(),
+                        boom_split(df_ret)[1]["ret"].std(),
+                        cal_sharpe(boom_split(df_ret)[1]),
+                        cal_sortino(boom_split(df_ret)[1]),
                     ]
                 ],
                 index=[strategy],

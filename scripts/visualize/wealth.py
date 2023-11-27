@@ -18,7 +18,6 @@ for strategy, strategy_info in dict_result_with_benchmark.items():
         label=strategy,
     )
 
-
 # # plot the boom bust periods and legend
 # for i in BOOM_BUST:
 #     if i["main_trend"] == "boom":
@@ -50,5 +49,4 @@ plt.legend()
 plt.tight_layout()
 
 # save the figure
-# plt.savefig(FIGURE_PATH / "cum_ret.pdf", dpi=300)
-plt.show()
+plt.savefig(FIGURE_PATH / "wealth.pdf", dpi=300)

@@ -13,6 +13,8 @@ df_crypto = {
     "name": [],
     "symbol": [],
     "price": [],
+    "mcap": [],
+    "vol": [],
     "timestamp": [],
 }
 
@@ -35,15 +37,22 @@ for cyrpto_name, crypto_info in processed_crypto_lst.items():
     ) as f:
         market_chart = json.load(f)
 
-    market_chart_price_list = market_chart["prices"]
+    for dict_name, lst_name in {
+        "price": "prices",
+        "mcap": "market_caps",
+        "vol": "total_volumes",
+    }.items():
+        df_crypto[dict_name] = df_crypto[dict_name] + [
+            _[1] for _ in market_chart[lst_name]
+        ]
 
     df_crypto["timestamp"] = df_crypto["timestamp"] + [
-        _[0] for _ in market_chart_price_list
+        _[0] for _ in market_chart["prices"]
     ]
-    df_crypto["price"] = df_crypto["price"] + [_[1] for _ in market_chart_price_list]
-    df_crypto["name"] = df_crypto["name"] + [cyrpto_name] * len(market_chart_price_list)
+
+    df_crypto["name"] = df_crypto["name"] + [cyrpto_name] * len(market_chart["prices"])
     df_crypto["symbol"] = df_crypto["symbol"] + [crypto_info["symbol"]] * len(
-        market_chart_price_list
+        market_chart["prices"]
     )
 
 # convert the dict to dataframe

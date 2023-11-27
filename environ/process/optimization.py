@@ -2,9 +2,10 @@
 Functions to optimization
 """
 
-from typing import Callable
+from typing import Callable, Literal
 
 import pandas as pd
+import numpy as np
 from scipy.optimize import minimize
 
 from environ.constants import glob_con
@@ -19,6 +20,8 @@ SIG_LIST = [0.1, 0.05, 0.01]
 
 def freq_iterate(
     df_crypto_processed: pd.DataFrame,
+    cash_con: Literal["0.1", "0.33"] = "0.1",
+    slow_medium_pct: list[float] = [1, 0],
 ) -> dict[str, dict[str, pd.DataFrame]]:
     """
     Function to iterate through the frequency
@@ -37,6 +40,18 @@ def freq_iterate(
             "file_name": "mean_var",
             "type": "mean_var_opt",
             "opt_func": mean_var_obj,
+            **dict_common,
+        },
+        "Mcap-weighted": {
+            "file_name": "mcap_weighted",
+            "type": "mcap_weighted",
+            "opt_func": None,
+            **dict_common,
+        },
+        "All-Bitcoin": {
+            "file_name": "btc",
+            "type": "buy_and_hold",
+            "opt_func": None,
             **dict_common,
         },
         **{
@@ -63,41 +78,81 @@ def freq_iterate(
 
     # iterate through the date list since the second quarter
     for q_idx in range(len(date_list) - 2):
-        # isolate the data for the quarter
-        df_train_q = df_crypto_processed[
-            (df_crypto_processed["date"] >= date_list[q_idx])
-            & (df_crypto_processed["date"] < date_list[q_idx + 1])
-        ].copy()
-
-        df_test_q = df_crypto_processed[
+        df_test = df_crypto_processed[
             (df_crypto_processed["date"] >= date_list[q_idx + 1])
             & (df_crypto_processed["date"] < date_list[q_idx + 2])
         ].copy()
 
-        for _, strategy_info in dict_result.items():
-            # get the return and weight
-            match strategy_info["type"]:
-                case "mean_var_opt":
-                    ret, wgt = mean_var_opt(
-                        df_train_q,
-                        df_test_q,
-                        date_list[q_idx + 1],
-                        strategy_info["opt_func"],
-                    )
+        # a dict to store the weight of three frequency
+        dict_signal = {
+            "slow": {
+                "start_date": date_list[q_idx]
+            },
+            "medium": {
+                "start_date": date_list[q_idx] + pd.Timedelta(weeks=2)
+            },
+            "fast": {
+                "start_date": date_list[q_idx] + pd.Timedelta(weeks=3)
+            },
+        }
 
-                case "var_related_opt":
-                    ret, wgt = var_related_opt(
-                        df_train_q,
-                        df_test_q,
-                        date_list[q_idx + 1],
-                        strategy_info["opt_func"],
-                        strategy_info["sig"]
-                    )
+        for _, strategy_info in dict_result.items():
+
+            signal_wgt_lst = []
+
+            for _, signal_info in dict_signal.items():
+                df_train = df_crypto_processed[
+                    (df_crypto_processed["date"] >= signal_info["start_date"])
+                    & (df_crypto_processed["date"] < date_list[q_idx + 1])
+                ].copy()
+                # get the return and weight
+                match strategy_info["type"]:
+                    case "mean_var_opt":
+                        wgt_df = mean_var_opt(
+                            df_train,
+                            date_list[q_idx + 1],
+                            strategy_info["opt_func"],
+                            cash_con
+                        )
+
+                    case "var_related_opt":
+                        wgt_df = var_related_opt(
+                            df_train,
+                            date_list[q_idx + 1],
+                            strategy_info["opt_func"],
+                            strategy_info["sig"],
+                            cash_con
+                        )
+                    case "mcap_weighted":
+                        wgt_df = mcap_weighted(
+                            df_train,
+                            date_list[q_idx + 1],
+                        )
+                    case _:
+                        wgt_df = buy_and_hold(
+                            df_train,
+                            date_list[q_idx + 1],
+                        )
+                signal_wgt_lst.append(wgt_df["weight"].tolist())
+
+            signal_wgt_lst = np.array(signal_wgt_lst)
+            signal_pct_lst = slow_medium_pct + [1 - sum(slow_medium_pct)]
+
+            wgt = pd.DataFrame(
+                {
+                    "quarter": wgt_df["quarter"],
+                    "name": wgt_df["name"],
+                    "weight": signal_pct_lst @ signal_wgt_lst,
+                }
+            )
+
+            # get the return
+            df_test_pivot = _panel_to_pivot(df_test)
+            ret = df_test_pivot @ wgt["weight"].tolist()
 
             # save the return
             ret = ret.reset_index().rename(columns={"index": "date",  # type: ignore
                                                     0:"ret"}).set_index("date")
-            ret["cum_ret"] = (ret["ret"] + 1).cumprod()
             strategy_info["ret"] = pd.concat([
                 strategy_info["ret"], 
                 ret # type: ignore
@@ -107,6 +162,9 @@ def freq_iterate(
             strategy_info["wgt"] = pd.concat([strategy_info["wgt"], wgt]) # type: ignore
 
     for _, strategy_info in dict_result.items():
+        # calculate the cumulative return
+        strategy_info["ret"]["cum_ret"] = (strategy_info["ret"] + 1).cumprod()
+
         # calculate the wealth
         strategy_info["wealth"] = pd.DataFrame(wealth(
                     strategy_info["ret"],
@@ -115,14 +173,61 @@ def freq_iterate(
 
     return dict_result
 
+def buy_and_hold(
+    df_train_q: pd.DataFrame,
+    test_start_date: pd.Timestamp,
+) -> pd.DataFrame:
+    """
+    Function to buy and hold one crypto
+    """
+
+    # get the mean return and covariance matrix
+    df_crypto_processed_q_pivot, _, _ = get_pivot_mean_cov_mat(df_train_q)
+
+    df_weight = {
+        "quarter": [test_start_date for _ in range(len(df_crypto_processed_q_pivot.columns))],
+        "name": df_crypto_processed_q_pivot.columns,
+        "weight": [1] + [0 for _ in range(len(df_crypto_processed_q_pivot.columns) - 1)],
+    }
+
+    return pd.DataFrame(df_weight)
+
+def mcap_weighted(
+    df_train_q: pd.DataFrame,
+    test_start_date: pd.Timestamp,
+) -> pd.DataFrame:
+    """
+    Function to calculate the mcap weighted return
+    """
+
+    df_weight = {
+        "quarter": [],
+        "name": [],
+        "weight": [],
+    }
+
+    df_last = df_train_q[df_train_q["date"] == df_train_q["date"].max()].copy()
+    df_last["weight"] = df_last["mcap"] / df_last["mcap"].sum()
+
+    # get the mean return and covariance matrix
+    df_crypto_processed_q_pivot, _, _ = get_pivot_mean_cov_mat(df_train_q)
+
+    for crypto_name in df_crypto_processed_q_pivot.columns:
+        df_weight["quarter"].append(test_start_date)
+        df_weight["name"].append(crypto_name)
+        df_weight["weight"].append(df_last[df_last["name"] == crypto_name]["weight"].iloc[0])
+
+    return pd.DataFrame(df_weight)
+
+
 
 def var_related_opt(
     df_train_q: pd.DataFrame,
-    df_test_q: pd.DataFrame,
     test_start_date: pd.Timestamp,
     obj_fuc: Callable,
     sig: float,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+    cash_con = Literal["0.1", "0.33"],
+) -> pd.DataFrame:
     """
     Function to optimize VaR-related functions
     """
@@ -138,36 +243,26 @@ def var_related_opt(
         # [1 / len(mean_ret) for _ in range(len(mean_ret))],
         [0.5, 0.3] + [0.2 / (len(mean_ret) - 2) for _ in range(len(mean_ret) - 2)],
         args=(df_crypto_processed_q_pivot, mean_ret, sig),
-        constraints=glob_con,
+        constraints=glob_con[cash_con],
         bounds=[(0, 1) for _ in range(len(mean_ret))],
     )
 
-    # get the pivot table for the test set
-    # test set might have some crypto that is not in the train set
-    df_test_q = df_test_q[
-        df_test_q["name"].isin(df_crypto_processed_q_pivot.columns)
-    ].copy()
-    df_test_q_pivot = _panel_to_pivot(df_test_q)
-
     # return the return and weight
-    return (
-        df_test_q_pivot @ res.x,
-        pd.DataFrame(
+    return pd.DataFrame(
             {
             "quarter": [test_start_date for _ in range(len(df_crypto_processed_q_pivot.columns))],
             "name": df_crypto_processed_q_pivot.columns,
             "weight": res.x,
             }
-        ),
-    )
+        )
 
 
 def mean_var_opt(
     df_train_q: pd.DataFrame,
-    df_test_q: pd.DataFrame,
     test_start_date: pd.Timestamp,
     obj_fuc: Callable,
-) -> tuple[pd.DataFrame, pd.DataFrame]:
+    cash_con = Literal["0.1", "0.33"],
+) -> pd.DataFrame:
     """
     Function to optimize mean-variance-related functions
     """
@@ -183,19 +278,12 @@ def mean_var_opt(
         # [1 / len(mean_ret) for _ in range(len(mean_ret))],
         [0.5, 0.3] + [0.2 / len(mean_ret) for _ in range(len(mean_ret) - 2)],
         args=(mean_ret, cov_mat),
-        constraints=glob_con,
+        constraints=glob_con[cash_con],
         bounds=[(0, 1) for _ in range(len(mean_ret))],
     )
 
-    # get the pivot table for the test set
-    # test set might have some crypto that is not in the train set
-    df_test_q = df_test_q[
-        df_test_q["name"].isin(df_crypto_processed_q_pivot.columns)
-    ].copy()
-    df_test_q_pivot = _panel_to_pivot(df_test_q)
-
     # return the return and weight
-    return df_test_q_pivot @ res.x, pd.DataFrame(
+    return pd.DataFrame(
         {
             "quarter": [test_start_date for _ in range(len(df_crypto_processed_q_pivot.columns))],
             "name": df_crypto_processed_q_pivot.columns,

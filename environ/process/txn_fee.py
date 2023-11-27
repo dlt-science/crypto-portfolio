@@ -17,6 +17,9 @@ def wealth(
     Function to calculate the wealth dynamics
     """
 
+    ret_df.index = pd.to_datetime(ret_df.index)
+    wgt_df["quarter"] = pd.to_datetime(wgt_df["quarter"])
+
     date_list = sorted(wgt_df["quarter"].unique().tolist())
 
     wgt_df_without_cash = wgt_df[wgt_df["name"] != "Cash"].copy()
@@ -68,11 +71,13 @@ def wealth(
                 # rebalance
                 cum_ret = (
                     ret_df.loc[
-                        (ret_df.index >= date) & (ret_df.index < date_list[idx + 1]),
+                        (ret_df.index >= date - pd.DateOffset(months=3))
+                        & (ret_df.index < date),
                         "ret",
                     ]
                     + 1
                 ).prod() - 1  # type: ignore
+
                 investment_value_after_ret_before_fee = investment_value_before_ret * (
                     cum_ret + 1
                 )
@@ -96,12 +101,12 @@ def wealth(
 
 
 if __name__ == "__main__":
-    ret_test = pd.DataFrame(
+    RET_TEST = pd.DataFrame(
         {"ret": [1, 1, 1]},
         index=["2000-01-01", "2000-04-01", "2000-07-01"],
     ).rename_axis("date")
 
-    wgt_test = pd.DataFrame(
+    WGT_TEST = pd.DataFrame(
         {
             "quarter": [
                 "2000-01-01",
@@ -116,4 +121,4 @@ if __name__ == "__main__":
         }
     )
 
-    print(wealth(ret_test, wgt_test))
+    print(wealth(RET_TEST, WGT_TEST))
