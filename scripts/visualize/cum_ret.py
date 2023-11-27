@@ -50,5 +50,4 @@ plt.legend()
 plt.tight_layout()
 
 # save the figure
-# plt.savefig(FIGURE_PATH / "cum_ret.pdf", dpi=300)
-plt.show()
+plt.savefig(FIGURE_PATH / "cum_ret_0.3.pdf", dpi=300)
