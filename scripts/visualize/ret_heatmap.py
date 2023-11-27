@@ -26,7 +26,7 @@ for cash_con in ["0.1", "0.33"]:
                     slow_weight,
                     (1 - slow_weight) * medium_in_medium_fast_weight,
                 ],
-                cash_con="0.1",
+                cash_con=cash_con,
             )
 
             for strategy, strategy_info in dict_result.items():
