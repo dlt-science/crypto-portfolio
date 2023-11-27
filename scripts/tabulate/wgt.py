@@ -12,5 +12,5 @@ for period, period_info in PLOT_DICT.items():
         df_wgt_pivot = df_wgt.pivot(index="quarter", columns="name", values="weight")
         gen_latex_tab(
             df_wgt_pivot,
-            TABLE_PATH / f"{strategy}_{period}_wgt.tex".replace(" ", "_"),
+            TABLE_PATH / f"{strategy}_{period}_wgt_0.33.tex".replace(" ", "_"),
         )

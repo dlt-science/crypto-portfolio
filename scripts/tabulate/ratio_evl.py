@@ -10,5 +10,5 @@ from scripts.process.process_ratio_evl import ratio_evl_dict
 for period_name, period_info in ratio_evl_dict.items():
     gen_latex_tab(
         period_info,
-        TABLE_PATH / f"{period_name}_ratio_evl.tex",
+        TABLE_PATH / f"{period_name}_ratio_evl_0.33.tex",
     )
