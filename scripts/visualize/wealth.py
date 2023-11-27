@@ -49,4 +49,4 @@ plt.legend()
 plt.tight_layout()
 
 # save the figure
-plt.savefig(FIGURE_PATH / "wealth.pdf", dpi=300)
+plt.savefig(FIGURE_PATH / "wealth_0.33.pdf", dpi=300)

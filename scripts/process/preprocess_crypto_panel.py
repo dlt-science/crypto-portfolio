@@ -19,7 +19,7 @@ df_crypto_without_missing_date = pd.concat(
                 "name": "Cash",
                 "symbol": "Cash",
                 "price": 1,
-                "mcap": 1e13,
+                "mcap": 0,
                 "vol": 1e13,
             }
         ),

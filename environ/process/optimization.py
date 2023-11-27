@@ -193,7 +193,7 @@ def buy_and_hold(
     return pd.DataFrame(df_weight)
 
 def mcap_weighted(
-    df_train_q: pd.DataFrame,
+    df_train: pd.DataFrame,
     test_start_date: pd.Timestamp,
 ) -> pd.DataFrame:
     """
@@ -206,11 +206,11 @@ def mcap_weighted(
         "weight": [],
     }
 
-    df_last = df_train_q[df_train_q["date"] == df_train_q["date"].max()].copy()
+    df_last = df_train[df_train["date"] == df_train["date"].max()].copy()
     df_last["weight"] = df_last["mcap"] / df_last["mcap"].sum()
 
     # get the mean return and covariance matrix
-    df_crypto_processed_q_pivot, _, _ = get_pivot_mean_cov_mat(df_train_q)
+    df_crypto_processed_q_pivot, _, _ = get_pivot_mean_cov_mat(df_train)
 
     for crypto_name in df_crypto_processed_q_pivot.columns:
         df_weight["quarter"].append(test_start_date)
