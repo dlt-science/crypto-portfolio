@@ -4,8 +4,8 @@ Functions to optimization
 
 from typing import Callable, Literal
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from scipy.optimize import minimize
 
 from environ.constants import glob_con
@@ -13,7 +13,6 @@ from environ.process.mat_op import _panel_to_pivot, get_pivot_mean_cov_mat
 from environ.process.obj_fuc import (max_es_adj_sharpe, max_var_adj_sharpe,
                                      mean_var_obj)
 from environ.process.txn_fee import wealth
-from scripts.process.preprocess_crypto_panel import date_list
 
 SIG_LIST = [0.1, 0.05, 0.01]
 
@@ -22,6 +21,7 @@ def freq_iterate(
     df_crypto_processed: pd.DataFrame,
     cash_con: Literal["0.1", "0.33"] = "0.1",
     slow_medium_pct: list[float] = [1, 0],
+    freq: Literal["weekly", "monthly", "quarterly"]="quarterly",
 ) -> dict[str, dict[str, pd.DataFrame]]:
     """
     Function to iterate through the frequency
@@ -76,12 +76,29 @@ def freq_iterate(
         },
     }
 
+    date_list = gen_date_list(
+        df_crypto_processed,
+        freq=freq,
+    )
+
     # iterate through the date list since the second quarter
     for q_idx in range(len(date_list) - 2):
-        df_test = df_crypto_processed[
+        df_test = df_crypto_processed.loc[
             (df_crypto_processed["date"] >= date_list[q_idx + 1])
             & (df_crypto_processed["date"] < date_list[q_idx + 2])
         ].copy()
+
+        match freq:
+            case "weekly":
+                medium_timedelta = pd.Timedelta(days=0)
+                fast_timedelta = pd.Timedelta(days=0)
+            case "montly":
+                medium_timedelta = pd.Timedelta(weeks=1)
+                fast_timedelta = pd.Timedelta(weeks=2)
+            case _:
+                medium_timedelta = pd.DateOffset(months=1)
+                fast_timedelta = pd.DateOffset(months=2)
+
 
         # a dict to store the weight of three frequency
         dict_signal = {
@@ -89,10 +106,10 @@ def freq_iterate(
                 "start_date": date_list[q_idx]
             },
             "medium": {
-                "start_date": date_list[q_idx] + pd.Timedelta(weeks=2)
+                "start_date": date_list[q_idx] + medium_timedelta
             },
             "fast": {
-                "start_date": date_list[q_idx] + pd.Timedelta(weeks=3)
+                "start_date": date_list[q_idx] + fast_timedelta
             },
         }
 
@@ -101,7 +118,7 @@ def freq_iterate(
             signal_wgt_lst = []
 
             for _, signal_info in dict_signal.items():
-                df_train = df_crypto_processed[
+                df_train = df_crypto_processed.loc[
                     (df_crypto_processed["date"] >= signal_info["start_date"])
                     & (df_crypto_processed["date"] < date_list[q_idx + 1])
                 ].copy()
@@ -172,6 +189,36 @@ def freq_iterate(
                 ))
 
     return dict_result
+
+def gen_date_list(
+    df_crypto_processed: pd.DataFrame,
+    freq: Literal["weekly", "monthly", "quarterly"]="quarterly",
+) -> list:
+    """
+    Function to generate different date list in different frequency
+    """
+
+    min_date = df_crypto_processed["date"].min()
+    max_date = df_crypto_processed["date"].max()
+
+    match freq:
+        case "weekly":
+            return pd.date_range(min_date,
+                                 max_date)[pd.date_range(min_date, max_date).weekday == 0].tolist()
+        case "montly":
+            return [
+                _ + pd.Timedelta(days=1)
+                for _ in pd.date_range(min_date, max_date, freq="M").tolist()
+]
+        case "quarterly":
+            return [
+                _ + pd.Timedelta(days=1)
+                for _ in pd.date_range(min_date, max_date, freq="Q").tolist()
+]
+        case _:
+            return []
+
+
 
 def buy_and_hold(
     df_train_q: pd.DataFrame,

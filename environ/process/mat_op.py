@@ -16,9 +16,7 @@ def _panel_to_pivot(
     """
     Function to convert the panel data to the pivot table
     """
-
     df_panel = df_panel.pivot(index=index, columns=columns, values=value).dropna(axis=1)
-
     return df_panel[
         ASSET_CLASSES[:2] + [_ for _ in df_panel.columns if _ not in ASSET_CLASSES[:2]]
     ]

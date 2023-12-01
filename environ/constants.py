@@ -16,6 +16,7 @@ FIGURE_PATH: Path = PROJECT_ROOT / "figures"
 # Crypto to exclude from swiss quote
 LOW_VOL_LIST = ["0x", "Audius", "Bancor"]
 STABLE_COIN_LIST = ["USD Coin"]
+TIME_LIMITED_COIN_LIST = ["ApeCoin"]
 
 # Asset classes
 ASSET_CLASSES = ["Bitcoin", "Cash", "Other Crypto"]

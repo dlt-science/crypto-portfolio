@@ -44,11 +44,5 @@ df_crypto_without_missing_date = df_crypto_without_missing_date[
     df_crypto_without_missing_date["date"] >= min_date
 ]
 
-# add the quarter information
-date_list = [
-    _ + pd.Timedelta(days=1)
-    for _ in pd.date_range(min_date, max_date, freq="Q").tolist()
-]
-
 # finish data preprocessing
 df_crypto_processed = df_crypto_without_missing_date.copy()

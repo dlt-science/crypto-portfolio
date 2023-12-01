@@ -6,10 +6,11 @@ import json
 import os
 
 from environ.constants import (
+    DATA_PATH,
     LOW_VOL_LIST,
     PROCESSED_DATA_PATH,
-    DATA_PATH,
     STABLE_COIN_LIST,
+    TIME_LIMITED_COIN_LIST,
 )
 
 # a dict to store the results
@@ -22,7 +23,11 @@ with open(DATA_PATH / "swiss_quote" / "crypto_lst.json", "r", encoding="utf-8") 
 # iterate over the data
 for crypto, crypto_info in data.items():
     # if the crypto is not in the low vol list and not in the stable coin list
-    if crypto not in LOW_VOL_LIST and crypto not in STABLE_COIN_LIST:
+    if (
+        (crypto not in LOW_VOL_LIST)
+        & (crypto not in STABLE_COIN_LIST)
+        & (crypto not in TIME_LIMITED_COIN_LIST)
+    ):
         # add the crypto to the res_dict
         res_dict[crypto] = crypto_info
 
