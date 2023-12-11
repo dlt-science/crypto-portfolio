@@ -2,6 +2,8 @@
 Functions to calculate transaction fee and adjust the return
 """
 
+from typing import Literal
+
 import pandas as pd
 
 from environ.constants import INITIAL_WEALTH, TRANSACTION_COST
@@ -10,6 +12,7 @@ from environ.constants import INITIAL_WEALTH, TRANSACTION_COST
 def wealth(
     ret_df: pd.DataFrame,
     wgt_df: pd.DataFrame,
+    freq: Literal["weekly", "monthly", "quarterly"] = "quarterly",
     initial_wealth: float = INITIAL_WEALTH,
     transaction_cost_rate: float = TRANSACTION_COST,
 ) -> dict[str, list[str | float]]:
@@ -69,14 +72,35 @@ def wealth(
 
             else:
                 # rebalance
-                cum_ret = (
-                    ret_df.loc[
-                        (ret_df.index >= date - pd.DateOffset(months=3))
-                        & (ret_df.index < date),
-                        "ret",
-                    ]
-                    + 1
-                ).prod() - 1  # type: ignore
+                match freq:
+                    case "quarterly":
+                        cum_ret = (
+                            ret_df.loc[
+                                (ret_df.index >= date - pd.DateOffset(months=3))
+                                & (ret_df.index < date),
+                                "ret",
+                            ]
+                            + 1
+                        ).prod() - 1  # type: ignore
+                    case "monthly":
+                        cum_ret = (
+                            ret_df.loc[
+                                (ret_df.index >= date - pd.DateOffset(months=1))
+                                & (ret_df.index < date),
+                                "ret",
+                            ]
+                            + 1
+                        ).prod() - 1  # type: ignore
+                    case _:
+                        cum_ret = (
+                            ret_df.loc[
+                                (ret_df.index >= date - pd.DateOffset(days=7))
+                                & (ret_df.index < date),
+                                "ret",
+                            ]
+                            + 1
+                        ).prod() - 1  # type: ignore
+
 
                 investment_value_after_ret_before_fee = investment_value_before_ret * (
                     cum_ret + 1

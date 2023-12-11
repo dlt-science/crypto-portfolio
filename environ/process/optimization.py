@@ -186,6 +186,7 @@ def freq_iterate(
         strategy_info["wealth"] = pd.DataFrame(wealth(
                     strategy_info["ret"],
                     strategy_info["wgt"],
+                    freq = freq,
                 ))
 
     return dict_result
