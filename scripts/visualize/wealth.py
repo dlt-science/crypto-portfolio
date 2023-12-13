@@ -8,9 +8,6 @@ from environ.constants import FIGURE_PATH
 from scripts.process.boom_bust import BOOM_BUST
 from scripts.process.result_agg import dict_result_with_benchmark
 
-# plot the cumulative return
-plt.figure(figsize=(12, 8))
-
 # plot the strategy
 for cash_con in ["0.33", "0.1"]:
     for freq in ["weekly", "montly", "quarterly"]:
@@ -47,14 +44,22 @@ for cash_con in ["0.33", "0.1"]:
         )
         dict_result = dict_result_with_benchmark[cash_con][freq].copy()
         for strategy, strategy_info in dict_result.items():
+            # plot the wealth in line and wealth_ema in dashed line in the color
+            # of the strategy
             plt.plot(
-                strategy_info["wealth"].set_index("date")["wealth"],
+                strategy_info["wealth_daily"]["wealth_daily"],
                 label=strategy,
             )
         # plot the legend
         plt.legend()
 
         plt.xticks(rotation=90)
+        plt.ylabel("Wealth")
+
+        # grid layout
+        plt.grid(
+            alpha=0.5,
+        )
 
         # tight layout
         plt.tight_layout()

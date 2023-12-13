@@ -8,6 +8,30 @@ import pandas as pd
 
 from environ.constants import INITIAL_WEALTH, TRANSACTION_COST
 
+def wealth_daily(strategy_info: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """
+    Function to calculate the daily wealth
+    """
+
+    df_wealth = strategy_info["wealth"].copy()
+    df_ret = strategy_info["ret"].copy()
+    df_wealth_daily = pd.DataFrame()
+
+    for idx, date in enumerate(df_wealth["date"].unique()):
+        wealth = df_wealth.loc[df_wealth["date"] == date, 'wealth'].values[0]
+        if idx != len(df_wealth) - 1:
+            df_ret_period = df_ret.loc[(df_ret.index >= date) & (df_ret.index < df_wealth["date"].unique()[idx + 1])].copy()
+        else:
+            df_ret_period = df_ret.loc[(df_ret.index >= date)].copy()
+
+        df_ret_period["ret"] = df_ret_period["ret"].shift(1).fillna(0)
+
+        df_ret_period["wealth_daily"] = (df_ret_period["ret"] + 1).cumprod() * wealth
+        
+        df_wealth_daily = pd.concat([df_wealth_daily, 
+                                     df_ret_period[["wealth_daily"]]])
+
+    return df_wealth_daily
 
 def wealth(
     ret_df: pd.DataFrame,

@@ -1,5 +1,5 @@
 """
-Script to visualize the cumulative return
+Script to visualize the wealth dynamics
 """
 
 import matplotlib.pyplot as plt
@@ -44,17 +44,17 @@ for cash_con in ["0.33", "0.1"]:
         )
         dict_result = dict_result_with_benchmark[cash_con][freq].copy()
         for strategy, strategy_info in dict_result.items():
+            # plot the wealth in line and wealth_ema in dashed line in the color
+            # of the strategy
             plt.plot(
-                strategy_info["ret"]["cum_ret"],
+                strategy_info["wealth_daily"]["wealth_ema"],
                 label=strategy,
             )
-
         # plot the legend
         plt.legend()
-        plt.ylabel("Cumulative Return")
 
         plt.xticks(rotation=90)
-
+        plt.ylabel("Exponential Moving Average of Daily Wealth")
         # grid layout
         plt.grid(
             alpha=0.5,
@@ -64,6 +64,6 @@ for cash_con in ["0.33", "0.1"]:
         plt.tight_layout()
 
         # save the figure
-        plt.savefig(FIGURE_PATH / f"cum_ret_{cash_con}_{freq}.pdf", dpi=300)
+        plt.savefig(FIGURE_PATH / f"wealth_{cash_con}_{freq}_ema.pdf", dpi=300)
 
         plt.close()

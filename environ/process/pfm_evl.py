@@ -7,7 +7,7 @@ import pandas as pd
 
 def cal_sharpe(
     df_res: pd.DataFrame,
-    ret_col: str = "ret",
+    ret_col: str = "wealth_ret",
 ):
     """
     Function to calculate the sharpe ratio
@@ -18,7 +18,7 @@ def cal_sharpe(
 
 def cal_sortino(
     df_res: pd.DataFrame,
-    ret_col: str = "ret",
+    ret_col: str = "wealth_ret",
 ):
     """
     Function to calculate the sortino ratio
