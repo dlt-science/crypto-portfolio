@@ -50,8 +50,8 @@ for cash_con in ["0.33", "0.1"]:
                 strategy_info["wealth_daily"]["wealth_ema"],
                 label=strategy,
             )
-        # plot the legend
-        plt.legend()
+        # plot the legend on the upper left corner
+        plt.legend(loc="upper left")
 
         plt.xticks(rotation=90)
         plt.ylabel("Exponential Moving Average of Daily Wealth")
