@@ -11,7 +11,7 @@ dict_result = {}
 
 for cash_con in ["0.33", "0.1"]:
     dict_result[cash_con] = {}
-    for freq in ["weekly", "montly", "quarterly"]:
+    for freq in ["weekly", "monthly", "quarterly"]:
         dict_result[cash_con][freq] = freq_iterate(
             df_crypto_processed,
             cash_con=cash_con,

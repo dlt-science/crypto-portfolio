@@ -12,7 +12,7 @@ plt.figure(figsize=(12, 8))
 
 # plot the strategy
 for cash_con in ["0.33", "0.1"]:
-    for freq in ["weekly", "montly", "quarterly"]:
+    for freq in ["weekly", "monthly", "quarterly"]:
         dict_result = dict_result_with_benchmark[cash_con][freq].copy()
         for strategy, strategy_info in dict_result.items():
             # plot the wealth in line and wealth_ema in dashed line in the color

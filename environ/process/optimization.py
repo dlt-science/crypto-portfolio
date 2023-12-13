@@ -92,7 +92,7 @@ def freq_iterate(
             case "weekly":
                 medium_timedelta = pd.Timedelta(days=0)
                 fast_timedelta = pd.Timedelta(days=0)
-            case "montly":
+            case "monthly":
                 medium_timedelta = pd.Timedelta(weeks=1)
                 fast_timedelta = pd.Timedelta(weeks=2)
             case _:
@@ -206,7 +206,7 @@ def gen_date_list(
         case "weekly":
             return pd.date_range(min_date,
                                  max_date)[pd.date_range(min_date, max_date).weekday == 0].tolist()
-        case "montly":
+        case "monthly":
             return [
                 _ + pd.Timedelta(days=1)
                 for _ in pd.date_range(min_date, max_date, freq="M").tolist()

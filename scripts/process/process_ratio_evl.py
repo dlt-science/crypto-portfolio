@@ -11,7 +11,7 @@ from scripts.process.result_agg import dict_result_with_benchmark
 df_ratio_evl_latex = pd.DataFrame()
 
 for cash_con in ["0.33", "0.1"]:
-    for freq in ["weekly", "montly", "quarterly"]:
+    for freq in ["weekly", "monthly", "quarterly"]:
         for strategy, strategy_info in dict_result_with_benchmark[cash_con][
             freq
         ].items():

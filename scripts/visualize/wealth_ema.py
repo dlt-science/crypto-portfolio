@@ -10,7 +10,7 @@ from scripts.process.result_agg import dict_result_with_benchmark
 
 # plot the strategy
 for cash_con in ["0.33", "0.1"]:
-    for freq in ["weekly", "montly", "quarterly"]:
+    for freq in ["weekly", "monthly", "quarterly"]:
         # plot the boom bust periods and legend
         for i in BOOM_BUST:
             if i["main_trend"] == "boom":
