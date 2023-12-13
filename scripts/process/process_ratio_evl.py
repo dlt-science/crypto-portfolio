@@ -30,7 +30,7 @@ for cash_con in ["0.33", "0.1"]:
                                 cal_sortino(df_ret),
                             ]
                         ],
-                        index=[f"{strategy} {cash_con} {freq}"],
+                        index=[f"{strategy},{cash_con},{freq}"],
                         columns=[
                             "Avg Return",
                             "Wealth EMA",
