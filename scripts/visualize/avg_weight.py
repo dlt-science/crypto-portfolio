@@ -34,7 +34,9 @@ for cash_con in ["0.33", "0.1"]:
 
             # save the figure
             plt.savefig(
-                FIGURE_PATH / f"avg_wgt_{cash_con}_{freq}_{strategy}.pdf", dpi=300
+                FIGURE_PATH
+                / f"avg_wgt_{cash_con}_{freq}_{strategy}.pdf".replace(" ", "_"),
+                dpi=300,
             )
 
             plt.close()
