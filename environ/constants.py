@@ -12,6 +12,8 @@ PROCESSED_DATA_PATH: Path = PROJECT_ROOT / "processed_data"
 TABLE_PATH: Path = PROJECT_ROOT / "tables"
 FIGURE_PATH: Path = PROJECT_ROOT / "figures"
 
+# Coingecko API KEY
+COINGECKO_API_KEY = ["CG-p19fJQK2mNHmCaZsjAXPSndt", "CG-MsksHi64zG3pWyguYpKAGhEi", "CG-2KLZH7JsRS8TDa2snEcCpMZA"]
 
 # Crypto to exclude from swiss quote
 LOW_VOL_LIST = ["0x", "Audius", "Bancor"]

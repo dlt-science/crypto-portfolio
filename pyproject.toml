@@ -2,27 +2,35 @@
 requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages]
+find = {}
+
 [project]
-name = "crypto-portfolio"
-version = "0.0.1" 
+name = "environ"
+version = "0.0.1"
 readme = "README.md"
-requires-python = ">=3.10.9"
+requires-python = ">=3.9.15"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
 ]
 dependencies = [
-    "requests",
-    'importlib-metadata; python_version<"3.12"',
+  "numpy==1.24.2", 
+  "pandas==1.5.3", 
+  "matplotlib==3.6.3", 
+  "requests==2.31.0", 
+  "web3==6.15.0"
 ]
+
+[project.optional-dependencies]
+dev = ["pylint", "black", "pytest"]
 
 [tool.black]
 line-length = 88
 target_version = ['py36']
 include = '\.pyi?$'
 exclude = '''
-
 (
   /(
       \.eggs         
